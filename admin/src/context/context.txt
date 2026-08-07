@@ -1,0 +1,10 @@
+aToken needs to be passed because it's proof that the person using the admin panel
+ is actually logged in — and your backend requires that proof on every protected request.
+
+Recall the full picture we built earlier
+1. Admin logs in → backend generates a JWT → sends it back
+2. Frontend saves that token (localStorage)
+3. Frontend must attach that token to every future request 
+   that touches a protected route (like /add-doctor)
+4. Backend's authAdmin middleware checks that token before 
+   allowing the request through
