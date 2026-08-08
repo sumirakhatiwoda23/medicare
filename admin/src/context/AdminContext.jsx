@@ -14,7 +14,7 @@ const AdminContextProvider = (props) => {
     // This is a wrapper component. Its whole job is to hold the real admin-related data
     // and make it available to every component nested inside it via {props.children}.
 
-    const [aToken, setAToken] = useState('')
+    const [aToken, setAToken] = useState(localStorage.getItem('aToken')?localStorage.getItem('aToken'):'')
     // aToken: the admin's authentication token (like a login session key).
     // Starts as an empty string '' — meaning "not logged in yet."
     // Once the admin logs in successfully, setAToken('someRealTokenString') updates this,
