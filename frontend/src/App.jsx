@@ -10,6 +10,7 @@ import MyAppointments from './pages/MyAppointments'
 import Appointment from './pages/Appointment'
 import RootLayout from './components/RootLayout'
 
+
 export default function App() {
  const router=createBrowserRouter([
   {
