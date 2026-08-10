@@ -1,33 +1,84 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import { AppContext } from '@/context/AppContext'
 import { assets } from '@/assets/assets'
 
 export default function MyProfile() {
 
-    const [userData, setUserData] = useState({
-        name: "Edward Vincent",
-        image: assets.profile_pic,
-        email: "richardjameswap@gmail.com",
-        phone: "+1 123 456 7890",
-        address: {
-            line1: "57th Cross, Richmond",
-            line2: "Circle, Church Road, London"
-        },
-        gender: "Male",
-        dob: "2000-07-20"
-    })
+  const { userData, setUserData, token, backendUrl, loadUserProfileData } = useContext(AppContext)
 
-    const [isEdit, setIsEdit] = useState(false)
+  const [isEdit, setIsEdit] = useState(false)
+  const [image, setImage] = useState(false)
 
-    return (
+  const updateUserProfileData = async () => {
+    try {
+      const formData = new FormData()
+      formData.append('name', userData.name)
+      formData.append('phone', userData.phone)
+      formData.append('address', JSON.stringify(userData.address))
+      formData.append('gender', userData.gender)
+      formData.append('dob', userData.dob)
+
+      image && formData.append('image', image)
+
+      const { data } = await axios.post(
+        backendUrl + '/api/user/update-profile',
+        formData,
+        { headers: { token } }
+      )
+
+      if (data.success) {
+        toast.success(data.message)
+        await loadUserProfileData()
+        setIsEdit(false)
+        setImage(false)
+      } else {
+        toast.error(data.message)
+      }
+
+    } catch (error) {
+      console.log(error)
+      toast.error(error.message)
+    }
+  }
+
+  return userData && (
         <div className="max-w-2xl px-6 py-8">
 
             {/* Profile Image */}
             <div className="mb-5">
-                <img
-                    src={userData.image}
-                    alt="Profile"
-                    className="w-32 h-32 rounded-full object-cover"
-                />
+                {
+                    isEdit ? (
+                        <label htmlFor="image">
+                            <div className='inline-block relative cursor-pointer'>
+                                <img
+                                    className='w-36 rounded opacity-75'
+                                    src={image ? URL.createObjectURL(image) : userData.image}
+                                    alt=""
+                                />
+                                <img
+                                    className='w-10 absolute bottom-12 right-12'
+                                    src={image ? '' : assets.upload_icon}
+                                    alt=""
+                                />
+                            </div>
+                            <input
+                                onChange={(e) => setImage(e.target.files[0])}
+                                type="file"
+                                id="image"
+                                accept="image/*"
+                                hidden
+                            />
+                        </label>
+                    ) : (
+                        <img
+                            className='w-36 rounded-full'
+                            src={userData.image}
+                            alt="Profile"
+                        />
+                    )
+                }
             </div>
 
             {/* Name */}
@@ -66,26 +117,9 @@ export default function MyProfile() {
                     <p className="w-28 text-sm text-gray-600">
                         Email id:
                     </p>
-
-                    {
-                        isEdit ? (
-                            <input
-                                type="email"
-                                value={userData.email}
-                                onChange={(e) =>
-                                    setUserData({
-                                        ...userData,
-                                        email: e.target.value
-                                    })
-                                }
-                                className="text-sm text-blue-400 border-b border-gray-300 outline-none px-1"
-                            />
-                        ) : (
-                            <p className="text-sm text-blue-400">
-                                {userData.email}
-                            </p>
-                        )
-                    }
+                    <p className="text-sm text-blue-400">
+                        {userData.email}
+                    </p>
                 </div>
 
                 {/* Phone */}
@@ -214,23 +248,25 @@ export default function MyProfile() {
                                 type="date"
                                 value={userData.dob}
                                 onChange={(e) =>
-                                    setUserData({
-                                        ...userData,
-                                        dob: e.target.value
-                                    })
-                                }
-                                className="text-sm text-gray-600 border border-gray-300 rounded px-2 py-1 outline-none"
+                               setUserData({
+                                   ...userData,
+                                   dob: e.target.value
+                               })
+                           }
+                           className="text-sm text-gray-600 border border-gray-300 rounded px-2 py-1 outline-none"
                             />
                         ) : (
                             <p className="text-sm text-gray-600">
-                                {new Date(userData.dob).toLocaleDateString(
-                                    'en-GB',
-                                    {
-                                        day: 'numeric',
-                                        month: 'long',
-                                        year: 'numeric'
-                                    }
-                                )}
+                                {userData.dob === 'Not Selected'
+                                    ? 'Not Selected'
+                                    : new Date(userData.dob).toLocaleDateString(
+                                        'en-GB',
+                                        {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric'
+                                        }
+                                    )}
                             </p>
                         )
                     }
@@ -241,19 +277,23 @@ export default function MyProfile() {
             {/* Buttons */}
             <div className="flex gap-3 mt-10">
 
-                <button
-                    onClick={() => setIsEdit(false)}
-                    className="px-9 py-2.5 border border-gray-300 rounded-full text-sm text-gray-600 hover:bg-gray-50 transition"
-                >
-                    Save information
-                </button>
-
-                <button
-                    onClick={() => setIsEdit(true)}
-                    className="px-7 py-2.5 border border-gray-300 rounded-full text-sm text-gray-600 hover:bg-gray-50 transition"
-                >
-                    Edit
-                </button>
+                {
+                    isEdit ? (
+                        <button
+                            onClick={updateUserProfileData}
+                            className="px-9 py-2.5 border border-gray-300 rounded-full text-sm text-gray-600 hover:bg-gray-50 transition"
+                        >
+                            Save information
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setIsEdit(true)}
+                            className="px-7 py-2.5 border border-gray-300 rounded-full text-sm text-gray-600 hover:bg-gray-50 transition"
+                        >
+                            Edit
+                        </button>
+                    )
+                }
 
             </div>
 
