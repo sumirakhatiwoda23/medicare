@@ -14,10 +14,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_SECRET_KEY
 })
 
-// ---- Raw doctor data (from your frontend assets.js, minus image import) ----
-// NOTE: imagePath below points to local files on YOUR computer.
-// Update these paths to wherever your doctor images actually live
-// (e.g. the same doc1.png...doc18.png files used in frontend/src/assets)
+// ---- Raw doctor data ----
 const rawDoctors = [
     { name: 'Dr. Richard James', speciality: 'General physician', degree: 'MBBS', experience: '4 Years', fees: 50, imagePath: './images/doc1.png', address: { line1: '17th Cross, Richmond', line2: 'Circle, Ring Road, London' } },
     { name: 'Dr. Emily Larson', speciality: 'Gynecologist', degree: 'MBBS', experience: '3 Years', fees: 60, imagePath: './images/doc2.png', address: { line1: '27th Cross, Richmond', line2: 'Circle, Ring Road, London' } },
@@ -39,24 +36,20 @@ const rawDoctors = [
     { name: 'Dr. Daniel Brown', speciality: 'Gastroenterologist', degree: 'MBBS', experience: '7 Years', fees: 70, imagePath: './images/doc3.png', address: { line1: '45th Cross, Richmond', line2: 'Circle, Ring Road, London' } },
 ]
 
-// ---- About text (kept short + reused, edit if you want unique bios) ----
 const aboutText = 'Dr has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.'
 
-// ---- Auto-generate email + password for each doctor ----
-// email pattern: firstname.lastname@medicare.com (lowercase, no "dr." prefix)
-// password: same temporary password for all — CHANGE this in production
 const generateEmail = (name) => {
     const cleaned = name
         .toLowerCase()
-        .replace(/^dr\.?\s*/i, '')   // remove "Dr." or "Dr" prefix
-        .replace(/[^a-z\s]/g, '')     // remove any non-letter characters
+        .replace(/^dr\.?\s*/i, '')
+        .replace(/[^a-z\s]/g, '')
         .trim()
-        .split(/\s+/)                 // split into words
-        .join('.')                    // join with a dot
+        .split(/\s+/)
+        .join('.')
     return `${cleaned}@medicare.com`
 }
 
-const TEMP_PASSWORD = 'Doctor@123' // ⚠️ temporary — doctors should change this after first login
+const TEMP_PASSWORD = 'Doctor@123'
 
 const doctorsToSeed = rawDoctors.map(doc => ({
     ...doc,
@@ -65,14 +58,19 @@ const doctorsToSeed = rawDoctors.map(doc => ({
     about: aboutText
 }))
 
-// ---- Main seed function ----
 const seedDatabase = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI)
+        // ✅ FIX: /prescripto थपियो, connectDB.js सँग consistent बनाइयो
+        await mongoose.connect(`${process.env.MONGODB_URI}/prescripto`)
         console.log('MongoDB connected')
+        console.log('Connected to database:', mongoose.connection.name)
+
+        if (mongoose.connection.name !== 'prescripto') {
+            console.log('⚠️  WARNING: Not connected to "prescripto" database! Aborting.')
+            process.exit(1)
+        }
 
         for (const doc of doctorsToSeed) {
-            // check if doctor with this email already exists — avoid duplicate seeding
             const exists = await doctorModel.findOne({ email: doc.email })
             if (exists) {
                 console.log(`Skipped (already exists): ${doc.name} — ${doc.email}`)

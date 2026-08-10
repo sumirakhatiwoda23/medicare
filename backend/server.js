@@ -4,6 +4,7 @@ import 'dotenv/config'
 import connectDB from './config/mongodb.js'
 import connectCloudinary from './config/cloudinary.js'
 import adminRouter from './routes/adminRoute.js'
+import doctorRouter from './routes/doctorRoute.js'
 
 // app config
 
@@ -22,6 +23,7 @@ app.use(cors())
 app.use('/api/admin',adminRouter)
 // localhost:4000/api/admin
 // Express checks: does this URL start with /api/admin? → Yes. So it hands off the rest of the URL (/add-doctor) to adminRouter to handle internally.
+app.use('/api/doctor',doctorRouter)
 
 app.get('/', (req, res) => {
     return res.status(200).json({
