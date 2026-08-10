@@ -1,4 +1,6 @@
+import axios from "axios"
 import { createContext, useState } from "react"
+import { toast } from "react-toastify"
 // createContext: React's tool for building a "global store" that any component can read from,
 // without passing props down manually through every level (avoids "prop drilling").
 // useState: lets us hold a piece of data that can change and trigger re-renders.
@@ -26,9 +28,55 @@ const AdminContextProvider = (props) => {
     // Prefixing it with VITE_ is required — Vite only exposes env vars that start with "VITE_"
     // to the frontend, for security (so you don't accidentally leak secret keys).
 
+const[doctors,setDoctors]=useState([])
+
+     const getAllDoctors = async()=>{
+        try {
+
+       const {data}=await axios.post(backendUrl+'/api/admin/all-doctors',{},{headers:{aToken}})
+   if(data.success){
+    setDoctors(data.doctors)
+    console.log(data.doctors)
+   }
+   else{
+    toast.error(data.message)
+   }
+            
+        } catch (error) {
+            toast.error(error.message)
+        }
+     }
+
+
+     const changeAvailability = async(docId)=>{
+        try {
+            
+const { data}=await axios.post(backendUrl+ '/api/admin/change-availability',{docId},{headers:{aToken}})
+ if(data.success){
+    toast.success(data.message)
+    getAllDoctors()
+ }
+else{
+    toast.error(data.message)
+}
+            
+        } catch (error) {
+             toast.error(error.message)
+        }
+     }
+
+
+
+
+
+
+
+
+
+
     const value = {
         aToken, setAToken,
-        backendUrl
+        backendUrl,doctors,getAllDoctors,changeAvailability
     }
     // Bundles everything we want to share into one object.
     // Any component using this context will get access to:
