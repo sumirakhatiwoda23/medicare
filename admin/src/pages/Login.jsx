@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react'
 import { AdminContext } from '../context/AdminContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { DoctorContext } from '../context/DoctorContext'
 // axios: library used to make HTTP requests to your backend API
 
 export default function Login() {
@@ -17,6 +18,7 @@ export default function Login() {
     // not from the DOM itself — that's why value={email} is paired with onChange.
 
     const { setAToken, backendUrl } = useContext(AdminContext)
+    const { setDToken } = useContext(DoctorContext)
     // Pulls two things out of your global AdminContext:
     // - setAToken: function to update the shared admin token in context
     // - backendUrl: your API's base URL, so this component doesn't hardcode it
@@ -58,14 +60,29 @@ export default function Login() {
                 }
 
             } else {
-                // Doctor mode — currently empty, meant to hold a separate doctor-login
-                // API call later (not implemented yet)
+                // Doctor mode
+
+                const { data } = await axios.post(backendUrl + '/api/doctor/login', { email, password })
+                // Same idea as the admin call above, but hitting the doctor login endpoint
+
+                if (data.success) {
+
+                    localStorage.setItem('dToken', data.token)
+                    // Persists the doctor token across refreshes, mirroring 'aToken' above
+
+                    setDToken(data.token)
+                    // Updates DoctorContext in-memory so the app reacts immediately
+
+                    console.log(data.token)
+                }
+                else{
+                    toast.error(data.message)
+                }
             }
 
         } catch (error) {
-            // Currently empty — if the request fails (wrong password, server down, etc.),
-            // nothing happens visibly to the user. Worth adding error handling/feedback later,
-            // but not touching that since you asked me not to add anything extra.
+            toast.error(error.message)
+            // Surfaces network/server errors (wrong password, server down, etc.) to the user
         }
     }
 

@@ -31,7 +31,7 @@ const AdminContextProvider = (props) => {
     
     const[appointments, setAppointments]= useState([])
 const[doctors,setDoctors]=useState([])
-
+const[dashData,setDashData]=useState(false)
      const getAllDoctors = async()=>{
         try {
 
@@ -111,14 +111,31 @@ const cancelAppointment = async (appointmentId) => {
     }
 }
 
+ const getDashData = async () => {
 
+    try {
+
+        const { data } = await axios.get(backendUrl + '/api/admin/dashboard', { headers: { aToken } })
+
+        if (data.success) {
+            setDashData(data.dashData)
+            console.log(data.dashData)
+        } else {
+            toast.error(data.message)
+        }
+
+    } catch (error) {
+        toast.error(error.message)
+    }
+}
 
 
 
     const value = {
         aToken, setAToken,
         backendUrl,doctors,getAllDoctors,changeAvailability,
-        appointments,setAppointments,getAllAppointments,cancelAppointment
+        appointments,setAppointments,getAllAppointments,cancelAppointment,
+        dashData,getDashData
     }
     // Bundles everything we want to share into one object.
     // Any component using this context will get access to:

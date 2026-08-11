@@ -9,17 +9,21 @@ import Dashboard from './pages/Admin/Dashboard';
 import AddDoctor from './pages/Admin/AddDoctor';
 import DoctorList from './pages/Admin/DoctorList';
 import AllAppointments from './pages/Admin/AllAppointments';
+import { DoctorContext } from './context/DoctorContext';
 
 export default function App() {
 
   const { aToken } = useContext(AdminContext)
+  const { dToken } = useContext(DoctorContext)
 
-  return aToken ? (
+
+  return aToken|| dToken ? (
     <div className='bg-[#F8F9FD]'>
       <Navbar/>
       <div className='flex items-start'>
         <Sidebar/>
         <Routes>
+          {/* Admin Route */}
           <Route path='/' element={<></>} />
           <Route path='/admin-dashboard' element={<Dashboard/>} />
           <Route path='/all-appointments' element={<AllAppointments/>} />
