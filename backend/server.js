@@ -6,7 +6,7 @@ import connectCloudinary from './config/cloudinary.js'
 import adminRouter from './routes/adminRoute.js'
 import doctorRouter from './routes/doctorRoute.js'
 import userRouter from './routes/userRoute.js'
-
+import paymentRouter from './routes/paymentRoute.js';
 // app config
 
 const app=express()
@@ -26,7 +26,7 @@ app.use('/api/admin',adminRouter)
 // Express checks: does this URL start with /api/admin? → Yes. So it hands off the rest of the URL (/add-doctor) to adminRouter to handle internally.
 app.use('/api/doctor',doctorRouter)
 app.use('/api/user',userRouter)
-
+app.use('/api/user', paymentRouter);
 app.get('/', (req, res) => {
     return res.status(200).json({
         message: 'API working'
