@@ -5,6 +5,7 @@ import axios from 'axios'
 import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { redirectToEsewa } from '@/utils/esewaCheckout'
 
 export default function Appointment() {
 
@@ -27,6 +28,11 @@ export default function Appointment() {
     const [docSlots, setDocSlots] = useState([])
     const [slotIndex, setSlotIndex] = useState(0)
     const [slotTime, setSlotTime] = useState('')
+
+    // confirmation modal state
+    const [showConfirm, setShowConfirm] = useState(false)
+    // tracks whether booking/payment request is in progress, to disable buttons and avoid double clicks
+    const [processing, setProcessing] = useState(false)
 
     const fetchDocInfo = async () => {
         const docInfo = doctors.find(doc => doc._id === docId)
@@ -111,17 +117,10 @@ export default function Appointment() {
         }
     }
 
-    const bookAppointment = async () => {
+    // books the appointment via cash/pay-later flow (original behaviour, unchanged)
+    const confirmBookAppointment = async () => {
 
-        if (!token) {
-            toast.warn('Login to book Appointment')
-            return nav('/login')
-        }
-
-        if (!slotTime) {
-            toast.warn('Please select a time slot')
-            return
-        }
+        setProcessing(true)
 
         try {
             const date = docSlots[slotIndex][0].datetime
@@ -148,7 +147,95 @@ export default function Appointment() {
         } catch (error) {
             console.log(error)
             toast.error(error.message)
+        } finally {
+            setProcessing(false)
+            setShowConfirm(false)
         }
+    }
+
+    // books the appointment, then immediately redirects to eSewa sandbox for payment
+    // NOTE: this assumes your /api/user/book-appointment response includes the new appointment's _id
+    // as data.appointmentId — adjust the field name below if your backend returns it differently
+    const bookAndPayWithEsewa = async () => {
+
+        setProcessing(true)
+
+        try {
+            const date = docSlots[slotIndex][0].datetime
+            let day = date.getDate()
+            let month = date.getMonth() + 1
+            let year = date.getFullYear()
+
+            const slotDate = day + "_" + month + "_" + year
+
+            // step 1: create the appointment first
+            const bookRes = await axios.post(
+                backendUrl + '/api/user/book-appointment',
+                { docId, slotDate, slotTime },
+                { headers: { token } }
+            )
+
+            if (!bookRes.data.success) {
+                toast.error(bookRes.data.message)
+                setProcessing(false)
+                return
+            }
+
+            const appointmentId = bookRes.data.appointmentId
+
+            if (!appointmentId) {
+                toast.error('Could not start payment — appointment ID missing')
+                setProcessing(false)
+                return
+            }
+
+            // step 2: ask backend to generate signed eSewa payment data
+            const esewaRes = await axios.post(
+                backendUrl + '/api/user/esewa-initiate',
+                { appointmentId, amount: docInfo.fees },
+                { headers: { token } }
+            )
+
+            if (esewaRes.data.success) {
+                // step 3: redirect browser to eSewa's sandbox checkout page
+                redirectToEsewa(esewaRes.data.paymentData)
+            } else {
+                toast.error(esewaRes.data.message)
+                setProcessing(false)
+            }
+
+        } catch (error) {
+            console.log(error)
+            toast.error(error.message)
+            setProcessing(false)
+        }
+    }
+
+    // runs when "Book an appointment" button is clicked — validates, then opens modal instead of booking directly
+    const bookAppointment = () => {
+
+        if (!token) {
+            toast.warn('Login to book Appointment')
+            return nav('/login')
+        }
+
+        if (!slotTime) {
+            toast.warn('Please select a time slot')
+            return
+        }
+
+        setShowConfirm(true)
+    }
+
+    // human-readable date for the modal, e.g. "SUN, 14 Sep"
+    const getSelectedDateLabel = () => {
+        const dateObj = docSlots[slotIndex]?.[0]?.datetime
+        if (!dateObj) return ''
+        const day = daysOfWeek[dateObj.getDay()]
+        const date = dateObj.getDate()
+        const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+        const month = monthNames[dateObj.getMonth()]
+        return `${day}, ${date} ${month}`
     }
 
     useEffect(() => {
@@ -324,6 +411,65 @@ export default function Appointment() {
                 docId={docId}
                 speciality={docInfo.speciality}
             />
+
+            {/* Confirmation Modal */}
+            {showConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-sm p-6">
+
+                        <h3 className="text-base font-semibold text-gray-900">
+                            Confirm Appointment
+                        </h3>
+
+                        <p className="mt-2 text-sm text-gray-600">
+                            You are about to book an appointment with{' '}
+                            <span className="font-medium text-gray-900">{docInfo.name}</span> on{' '}
+                            <span className="font-medium text-gray-900">{getSelectedDateLabel()}</span> at{' '}
+                            <span className="font-medium text-gray-900">{slotTime}</span>.
+                        </p>
+
+                        <p className="mt-2 text-sm text-gray-600">
+                            Consultation fee:{' '}
+                            <span className="font-medium text-gray-900">
+                                {currencySymbol} {docInfo.fees}
+                            </span>
+                        </p>
+
+                        <p className="mt-3 text-sm text-gray-600">
+                            Choose how you'd like to proceed.
+                        </p>
+
+                        <div className="mt-6 flex flex-col gap-2">
+
+                            <button
+                                onClick={bookAndPayWithEsewa}
+                                disabled={processing}
+                                className="text-sm px-4 py-2 rounded bg-green-600 text-white hover:opacity-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {processing ? 'Processing...' : 'Book & Pay with eSewa'}
+                            </button>
+
+                            <button
+                                onClick={confirmBookAppointment}
+                                disabled={processing}
+                                className="text-sm px-4 py-2 rounded bg-primary text-white hover:opacity-90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {processing ? 'Processing...' : 'Book Now, Pay Later'}
+                            </button>
+
+                            <button
+                                onClick={() => setShowConfirm(false)}
+                                disabled={processing}
+                                className="text-sm px-4 py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-100 transition-all duration-200 disabled:opacity-50"
+                            >
+                                Go Back
+                            </button>
+
+                        </div>
+
+                    </div>
+                </div>
+            )}
 
         </div>
     )

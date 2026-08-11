@@ -8,6 +8,7 @@ import Contact from './pages/Contact'
 import MyProfile from './pages/MyProfile'
 import MyAppointments from './pages/MyAppointments'
 import Appointment from './pages/Appointment'
+import VerifyEsewa from './pages/VerifyEsewa'
 import RootLayout from './components/RootLayout'
 
 
@@ -53,6 +54,10 @@ export default function App() {
       {
        path:'/appointment/:docId',
        element:<Appointment/>,
+     },
+      {
+       path:'/verify-esewa',
+       element:<VerifyEsewa/>,
      }
     ]
 
