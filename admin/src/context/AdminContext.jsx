@@ -21,13 +21,15 @@ const AdminContextProvider = (props) => {
     // Starts as an empty string '' — meaning "not logged in yet."
     // Once the admin logs in successfully, setAToken('someRealTokenString') updates this,
     // and every component using this context instantly sees the new value.
-
+    
+    
     const backendUrl = import.meta.env.VITE_BACKEND_URL
     // Reads an environment variable — the backend API's base URL (e.g. "https://api.example.com").
     // import.meta.env is how Vite (your build tool) exposes .env file variables to your code.
     // Prefixing it with VITE_ is required — Vite only exposes env vars that start with "VITE_"
     // to the frontend, for security (so you don't accidentally leak secret keys).
-
+    
+    const[appointments, setAppointments]= useState([])
 const[doctors,setDoctors]=useState([])
 
      const getAllDoctors = async()=>{
@@ -66,9 +68,48 @@ else{
      }
 
 
+const getAllAppointments = async () => {
+    try {
 
+        const { data } = await axios.get(
+            backendUrl + '/api/admin/appointments',
+            { headers: { aToken } }
+        )
 
+        if (data.success) {
+            setAppointments(data.appointments)
+            console.log(data.appointments)
+        } else {
+            toast.error(data.message)
+        }
 
+    } catch (error) {
+        console.log(error)
+        toast.error(error.message)
+    }
+}
+
+const cancelAppointment = async (appointmentId) => {
+    try {
+
+        const { data } = await axios.post(
+            backendUrl + '/api/admin/cancel-appointment',
+            { appointmentId },
+            { headers: { aToken } }
+        )
+
+        if (data.success) {
+            toast.success(data.message)
+            getAllAppointments()
+        } else {
+            toast.error(data.message)
+        }
+
+    } catch (error) {
+        console.log(error)
+        toast.error(error.message)
+    }
+}
 
 
 
@@ -76,7 +117,8 @@ else{
 
     const value = {
         aToken, setAToken,
-        backendUrl,doctors,getAllDoctors,changeAvailability
+        backendUrl,doctors,getAllDoctors,changeAvailability,
+        appointments,setAppointments,getAllAppointments,cancelAppointment
     }
     // Bundles everything we want to share into one object.
     // Any component using this context will get access to:
