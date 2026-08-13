@@ -6,7 +6,7 @@ import { redirectToEsewa } from '@/utils/esewaCheckout'
 
 export default function MyAppointments() {
 
-  const { backendUrl, token , getDoctorsData } = useContext(AppContext)
+  const { backendUrl, token, getDoctorsData } = useContext(AppContext)
   const [appointments, setAppointments] = useState([])
   const [selectedButton, setSelectedButton] = useState(null)
   // tracks whether a payment/cancel request is in progress, to disable buttons during the call
@@ -34,14 +34,14 @@ export default function MyAppointments() {
       )
 
       if (data.success) {
-        setAppointments(data.appointments.reverse())
+        setAppointments([...data.appointments].reverse())
       } else {
         toast.error(data.message)
       }
 
     } catch (error) {
       console.log(error)
-      toast.error(error.message)
+      toast.error(error.response?.data?.message || error.message)
     }
   }
 
@@ -64,7 +64,9 @@ export default function MyAppointments() {
 
     } catch (error) {
       console.log(error)
-      toast.error(error.message)
+      toast.error(error.response?.data?.message || error.message)
+    } finally {
+      setProcessing(false)
     }
   }
 
@@ -85,12 +87,14 @@ export default function MyAppointments() {
       } else {
         toast.error(data.message)
         setProcessing(false)
+        setSelectedButton(null)
       }
 
     } catch (error) {
       console.log(error)
-      toast.error(error.message)
+      toast.error(error.response?.data?.message || error.message)
       setProcessing(false)
+      setSelectedButton(null)
     }
   }
 
@@ -104,6 +108,7 @@ export default function MyAppointments() {
     if (!confirmAction) return
 
     if (confirmAction.type === 'cancel') {
+      setProcessing(true)
       cancelAppointment(confirmAction.appointmentId)
       setConfirmAction(null)
     } else if (confirmAction.type === 'pay') {
@@ -144,8 +149,8 @@ export default function MyAppointments() {
               <div className="shrink-0">
                 <img
                   className="w-32 h-32 sm:w-36 sm:h-36 object-cover bg-indigo-50 rounded"
-                  src={item.docData.image}
-                  alt={item.docData.name}
+                  src={item.docData?.image}
+                  alt={item.docData?.name}
                 />
               </div>
 
@@ -153,11 +158,11 @@ export default function MyAppointments() {
               <div className="flex-1 text-sm text-zinc-600">
 
                 <p className="text-neutral-800 font-semibold text-base">
-                  {item.docData.name}
+                  {item.docData?.name}
                 </p>
 
                 <p className="mt-1">
-                  {item.docData.speciality}
+                  {item.docData?.speciality}
                 </p>
 
                 <p className="text-zinc-700 font-medium mt-3">
@@ -165,11 +170,11 @@ export default function MyAppointments() {
                 </p>
 
                 <p className="text-xs mt-1">
-                  {item.docData.address.line1}
+                  {item.docData?.address?.line1}
                 </p>
 
                 <p className="text-xs">
-                  {item.docData.address.line2}
+                  {item.docData?.address?.line2}
                 </p>
 
                 <p className="text-xs mt-2">
