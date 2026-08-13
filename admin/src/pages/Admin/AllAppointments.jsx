@@ -127,7 +127,11 @@ export default function AllAppointments() {
                   {
                     item.cancelled
                       ? <p className="text-red-400 text-xs font-medium">Cancelled</p>
-                      : <img
+                      : item.isCompleted ? 
+                      <p className="text-green-500 text-xs font-medium">Completed</p>
+                      :
+                      
+                      <img
                           onClick={() => requestCancel(item._id, item.userData.name)}
                           className="w-10 cursor-pointer"
                           src={assets.cancel_icon}

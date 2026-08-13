@@ -2,19 +2,21 @@ import React, { useContext } from 'react'
 import { assets } from '../assets/assets'
 import { AdminContext } from '../context/AdminContext'
 import { useNavigate } from 'react-router-dom'
+import { DoctorContext } from '../context/DoctorContext'
 
 export default function Navbar() {
 
 const {aToken,setAToken}=useContext(AdminContext)
 const nav=useNavigate()
-
+const {dToken,setDToken}=useContext(DoctorContext)
 
 
 const logout=()=>{
     nav('/')
      aToken && setAToken('')
      aToken && localStorage.removeItem('aToken')
-
+   dToken && setDToken('')
+   dToken && localStorage.removeItem('dToken')
 
 }
 
@@ -38,7 +40,7 @@ const logout=()=>{
 <button 
 onClick={logout}
 
-className='bg-primary text-white text-sm px-10 py-2 rounded-full'>Logout</button>
+className='bg-primary text-white text-sm px-10 py-2 cursor-pointer rounded-full'>Logout</button>
 
 
     </div>

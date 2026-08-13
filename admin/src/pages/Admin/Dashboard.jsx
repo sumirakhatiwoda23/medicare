@@ -100,15 +100,18 @@ export default function Dashboard() {
                 <p className='text-gray-800 font-medium'>{item.docData.name}</p>
                 <p className='text-gray-400'>Booking on {slotDateFormat(item.slotDate)}</p>
               </div>
+
               {item.cancelled ? (
                 <p className='text-red-400 text-xs font-medium'>Cancelled</p>
+              ) : item.isCompleted ? (
+                <p className='text-green-500 text-xs font-medium'>Completed</p>
               ) : (
-                <button
+                <img
                   onClick={() => requestCancel(item._id, item.docData.name)}
-                  className='w-8 h-8 flex items-center justify-center rounded-full bg-red-50 text-red-400 hover:bg-red-100 transition-colors'
-                >
-                  &#10005;
-                </button>
+                  className='w-10 cursor-pointer'
+                  src={assets.cancel_icon}
+                  alt="Cancel appointment"
+                />
               )}
             </div>
           ))}
