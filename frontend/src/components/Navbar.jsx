@@ -61,7 +61,18 @@ const logout=()=>{
         </NavLink>
       </ul>
 
-<div>
+<div className='flex items-center gap-4'>
+
+    {/* Admin Panel button - opens separate Vercel deployment in new tab */}
+    <a
+      href ="https://medicare-91ry.vercel.app"
+      target="_blank"
+      rel="noopener noreferrer"
+      className='hidden md:block border border-gray-400 px-6 py-2 rounded-full text-sm text-gray-700 hover:bg-gray-100 transition-all'
+    >
+      Admin Panel
+    </a>
+
     {
         token 
         && userData
@@ -107,6 +118,18 @@ const logout=()=>{
         <NavLink onClick={()=>setShowMenu(false)} to = '/doctors'> <p className=' px-4 py-2 rounded inline-block '>ALL DOCTORS</p></NavLink>
         <NavLink onClick={()=>setShowMenu(false)} to = '/about'> <p className=' px-4 py-2 rounded inline-block '>ABOUT</p></NavLink>
         <NavLink onClick={()=>setShowMenu(false)} to = '/contact'><p className=' px-4 py-2 rounded inline-block '>CONTACT</p></NavLink>
+        {/* Admin Panel link in mobile menu too */}
+        <li>
+          <a
+            href="https://medicare-91ry.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={()=>setShowMenu(false)}
+            className='px-4 py-2 rounded inline-block border border-gray-400 mt-2'
+          >
+            Admin Panel
+          </a>
+        </li>
       </ul>
     </div>
 
