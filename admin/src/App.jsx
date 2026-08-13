@@ -10,7 +10,7 @@ import AddDoctor from './pages/Admin/AddDoctor';
 import DoctorList from './pages/Admin/DoctorList';
 import AllAppointments from './pages/Admin/AllAppointments';
 import { DoctorContext } from './context/DoctorContext';
-import DoctorDashBoard from './pages/Doctor/DoctorDashBoard';
+import DoctorDashBoard from './pages/Doctor/DoctorDashboard';
 import DoctorAppointments from './pages/Doctor/DoctorAppointments';
 import DoctorProfile from './pages/Doctor/DoctorProfile';
 
