@@ -7,6 +7,20 @@ import doctorModel from "../models/doctorModel.js"
 import appointmentModel from "../models/appointmentModel.js"
 
 
+// helper: uploads a file buffer (from multer's memoryStorage) to Cloudinary
+// via a stream, since there's no local file path to read from anymore
+const streamUpload = (buffer) => {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            { resource_type: 'image' },
+            (error, result) => {
+                if (result) resolve(result)
+                else reject(error)
+            }
+        )
+        stream.end(buffer)
+    })
+}
 
 
 // API to register user
@@ -117,8 +131,8 @@ const updateProfile = async (req,res) => {
         })
 
         if (imageFile) {
-            // upload image to cloudinary
-            const imageUpload = await cloudinary.uploader.upload(imageFile.path, {resource_type:'image'})
+            // upload image buffer to cloudinary directly (no local disk write)
+            const imageUpload = await streamUpload(imageFile.buffer)
             const imageURL = imageUpload.secure_url
 
             await userModel.findByIdAndUpdate(userId, {image:imageURL})

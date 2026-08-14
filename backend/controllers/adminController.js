@@ -1,4 +1,3 @@
-
 import validator from 'validator'
 import bcrypt from 'bcrypt'
 import {v2 as cloudinary} from 'cloudinary'
@@ -7,6 +6,22 @@ import jwt from 'jsonwebtoken'
 import appointmentModel from '../models/appointmentModel.js'
 import userModel from '../models/userModel.js'
 // api for adding doctor
+
+
+// helper: uploads a file buffer (from multer's memoryStorage) to Cloudinary
+// via a stream, since there's no local file path to read from anymore
+const streamUpload = (buffer) => {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            { resource_type: 'image' },
+            (error, result) => {
+                if (result) resolve(result)
+                else reject(error)
+            }
+        )
+        stream.end(buffer)
+    })
+}
 
 
 const addDoctor=async(req,res)=>{
@@ -45,8 +60,8 @@ if(password.length<8){
 const salt=await bcrypt.genSalt(10)
 const hashedPassword=await bcrypt.hash(password,salt)
 
-// upload image to cloudinary
-const imageUpload= await cloudinary.uploader.upload(imageFile.path,{resource_type:"image"})
+// upload image buffer to cloudinary directly (no local disk write)
+const imageUpload = await streamUpload(imageFile.buffer)
 const imageUrl=imageUpload.secure_url
 
 
