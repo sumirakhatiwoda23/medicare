@@ -20,8 +20,10 @@ try {
 if(state === 'Sign Up'){
    const{data}=await axios.post(backendUrl + '/api/user/register',{name,password,email})
   if(data.success){
-    localStorage.setItem('token',data.token)
-    setToken(data.token)
+    toast.success('Account created! Please log in.')
+    setState('Login')       // switch to login form instead of auto-logging in
+    setName('')
+    setPassword('')         // clear password so they re-enter it on login
   } else{
     toast.error(data.message)
   }
