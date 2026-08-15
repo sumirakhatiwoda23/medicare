@@ -2,7 +2,7 @@
 
 Medicare is a full-stack **MERN** application that lets patients discover doctors, book appointments, and pay online, while doctors and admins manage schedules, availability, and appointments through dedicated dashboards.
 
-**Live Demo (Frontend):** [medicare-rho-sage.vercel.app](https://medicare-rho-sage.vercel.app/)
+**Live Demo (Frontend):** [medicare-rho-sage.vercel.app](https://medicare-pi-six-35.vercel.app/)
 **Live Demo (Admin / Doctor Panel):** [medicare-91ry.vercel.app](https://medicare-91ry.vercel.app/)
 
 ---
