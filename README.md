@@ -165,7 +165,7 @@ Medicare integrates **eSewa** for appointment payments:
 
 | App | URL |
 |---|---|
-| Patient Frontend | https://medicare-rho-sage.vercel.app/ |
+| Patient Frontend | https://medicare-pi-six-35.vercel.app/ |
 | Admin / Doctor Panel | https://medicare-91ry.vercel.app/ |
 
 ---
